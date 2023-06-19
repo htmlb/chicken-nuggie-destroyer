@@ -1,0 +1,103 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the game window
+window_width = 800
+window_height = 600
+window = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption("Chicken Nugget Shooter")
+
+# Define colors
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLACK = (0, 0, 0)
+
+# Load player and enemy images
+player_img = pygame.image.load("player.png")
+enemy_img = pygame.image.load("enemy.png")
+
+# Get image dimensions
+player_width, player_height = player_img.get_size()
+enemy_width, enemy_height = enemy_img.get_size()
+
+# Set player position
+player_x = (window_width - player_width) // 2
+player_y = window_height - player_height - 10
+
+# Set enemy position
+enemy_x = random.randint(0, window_width - enemy_width)
+enemy_y = random.randint(50, 150)
+
+# Set player speed
+player_speed = 5
+
+# Set enemy speed
+enemy_speed = 2
+
+# Set bullet properties
+bullet_img = pygame.image.load("bullet.png")
+bullet_width, bullet_height = bullet_img.get_size()
+bullet_x = 0
+bullet_y = player_y
+bullet_speed = 10
+bullet_state = "ready"
+
+# Set initial score and streak
+score = 0
+streak = 0
+
+# Load background music
+pygame.mixer.music.load("background_music.mp3")
+pygame.mixer.music.play(-1)
+
+# Game loop
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    window.fill(WHITE)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        # Check for keypress events
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_x -= player_speed
+            if event.key == pygame.K_RIGHT:
+                player_x += player_speed
+            if event.key == pygame.K_SPACE:
+                if bullet_state == "ready":
+                    bullet_x = player_x + player_width // 2 - bullet_width // 2
+                    bullet_state = "fire"
+
+    # Update player position
+    if player_x < 0:
+        player_x = 0
+    elif player_x > window_width - player_width:
+        player_x = window_width - player_width
+
+    # Update bullet position
+    if bullet_state == "fire":
+        bullet_y -= bullet_speed
+        if bullet_y <= 0:
+            bullet_y = player_y
+            bullet_state = "ready"
+
+    # Check for collision between bullet and enemy
+    if bullet_state == "fire":
+        if enemy_x <= bullet_x <= enemy_x + enemy_width and enemy_y <= bullet_y <= enemy_y + enemy_height:
+            bullet_y = player_y
+            bullet_state = "ready"
+            score += 1
+            streak += 1
+            enemy_x = random.randint(0, window_width - enemy_width)
+            enemy_y = random.randint(50, 150)
+
+    # Check for collision between player and enemy
+    if enemy_y + enemy_height >= player_y:
+        if player_x <= enemy_x <= player_x + player_width or player_x <= enemy_x + enemy_width <= player
